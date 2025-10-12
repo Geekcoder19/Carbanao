@@ -1,0 +1,80 @@
+body {
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  background-color: #ffffff;
+}
+
+header {
+  margin-top: 3em;
+  text-align: center;
+  color: white;
+}
+
+header h1 {
+  font-size: 2em;
+  font-weight: 900;
+}
+
+/* ✅ Fixed typo: container_button */
+.container_button {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  padding: 20px;
+}
+
+/* 3D canvas */
+#container3D canvas {
+  width: 1500px !important;
+  height: 600px !important;
+  position: absolute;
+  background-color: beige;
+}
+
+/* ✅ Neumorphic container */
+.neu-container {
+  background-color: #e0e0e0;
+  border-radius: 16px;
+  padding: 16px 24px;
+  box-shadow: 4px 4px 8px #bebebe, -4px -4px 8px #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ✅ Shared neumorphic style for buttons & selects */
+.neu-element,
+.neu-button {
+  background: #e0e0e0;
+  color: #333;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-size: 14px;
+  cursor: pointer;
+  box-shadow: 4px 4px 8px #bebebe, -4px -4px 8px #ffffff;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  outline: none;
+}
+
+/* Hover / focus effect */
+.neu-element:hover,
+.neu-element:focus,
+.neu-button:hover {
+  box-shadow: inset 4px 4px 8px #bebebe, inset -4px -4px 8px #ffffff;
+  transform: translateY(1px);
+}
+
+/* Optional active (click) effect */
+.neu-element:active,
+.neu-button:active {
+  transform: scale(0.98);
+}
+
+/* Label styling */
+.neu-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}

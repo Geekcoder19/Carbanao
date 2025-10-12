@@ -1,0 +1,199 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Jost', sans-serif;
+}
+body {
+    background-image: url(img/carousel-2.jpg);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #fff;
+    overflow-x: hidden;
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: rgba(0, 0, 0, 0.8);
+    position: relative;
+}
+.logo img {
+    width: 120px;
+    height: auto;
+}
+nav {
+    flex-grow: 1;
+    text-align: right;
+}
+.nav-links {
+    list-style: none;
+    display: flex;
+    justify-content: flex-end;
+    gap: 20px;
+}
+.nav-links li a {
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 15px;
+    transition: background 0.3s, color 0.3s;
+}
+.nav-links li a:hover {
+    background: #fff;
+    color: #000;
+    border-radius: 5px;
+}
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+.menu-toggle .bar {
+    height: 4px;
+    width: 25px;
+    background-color: #fff;
+    margin: 3px 0;
+    transition: 0.3s;
+}
+.container {
+    width: 1200px;
+    margin: auto;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+.card {
+    width: 300px;
+    background: #000;
+    border-radius: 10px;
+    margin-top: 40px;
+    position: relative;
+    overflow: hidden;
+    transition: 0.5s;
+    text-align: center;
+}
+.card:hover {
+    box-shadow: 0px 0px 20px 1px rgb(255, 255, 255);
+}
+.card img.bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    opacity: 0.2;
+}
+
+   /* General styling and layout code remains the same */
+
+.card {
+width: 300px;
+background: #000;
+border-radius: 10px;
+margin-top: 40px;
+position: relative;
+overflow: hidden;
+transition: transform 0.5s ease, box-shadow 0.5s ease;
+text-align: center;
+transform: translateY(0);
+}
+
+.card:hover {
+transform: scale(1.05);
+box-shadow: 0px 0px 30px 5px rgba(255, 255, 255, 0.8);
+}
+
+.card img.bg {
+width: 100%;
+height: 100%;
+object-fit: cover;
+position: absolute;
+top: 0;
+left: 0;
+z-index: 1;
+opacity: 0.2;
+transition: opacity 0.5s ease;
+}
+
+.card:hover img.bg {
+opacity: 0.4;
+}
+
+.card img.one {
+width: 120px;
+height: 120px;
+border-radius: 50%;
+margin-top: 20px;
+z-index: 2;
+position: relative;
+transition: transform 0.5s ease;
+}
+
+.card:hover img.one {
+transform: rotate(360deg);
+}
+.team .team-item:hover .team-content h4 {
+color: wheat
+}
+.team .team-item:hover .team-content p {
+color: var(--bs-white);
+}
+.card h3, .card h4 {
+z-index: 2;
+position: relative;
+margin-top: 10px;
+color: #fff;
+font-size: 1.4rem;
+opacity: 0;
+animation: fadeIn 1s forwards;
+animation-delay: 0.2s;
+}
+
+.card h4 {
+font-weight: 500;
+margin-bottom: 15px;
+}
+
+.icon {
+display: flex;
+justify-content: center;
+gap: 15px;
+margin-top: 20px;
+margin-bottom: 20px;
+z-index: 2;
+position: relative;
+opacity: 0;
+animation: fadeIn 1s forwards;
+animation-delay: 0.5s;
+}
+
+.icon ion-icon {
+font-size: 24px;
+border-radius: 50%;
+padding: 10px;
+background: #fff;
+color: #000;
+transition: background 0.3s, color 0.3s, transform 0.3s ease;
+}
+
+.icon ion-icon:hover {
+color: #fff;
+background: #000;
+transform: scale(1.2);
+}
+
+/* Keyframes for fade-in animation */
+@keyframes fadeIn {
+from {
+opacity: 0;
+transform: translateY(20px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
