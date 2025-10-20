@@ -1,19 +1,22 @@
+
+
 import React from "react";
-import Button from "./ui/Button";
 import Tablink from "./ui/Tablink";
 import logo from "../assets/images/white_logo.png";
 import { FaBars } from "react-icons/fa6";
 import AnimButton from "./ui/AnimButton";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext"; // ✅ import context
+import { useUser } from "../context/UserContext"; // ✅ 1. Import useUser hook
 
 export default function Header() {
   const navigate = useNavigate();
-  const { user, logoutUser } = useUser(); // ✅ get user info + logout function
+  const { user, logoutUser } = useUser(); // ✅ 2. Get user state and logout function from context
 
+  // ✅ 3. Handle the complete logout logic
   const handleLogout = () => {
-    logoutUser(); // clear global user
-    navigate("/login");
+    logoutUser(); // Clears user from global context
+    localStorage.removeItem("user"); // Removes user from browser storage
+    navigate("/login"); // Redirects to the login page
   };
 
   return (
@@ -52,16 +55,21 @@ export default function Header() {
           <FaBars />
         </button>
 
-        {/* 🔹 Conditional Rendering */}
+        {/* ✅ 4. Conditionally render Login or Logout button */}
         {user ? (
-          <AnimButton
-            text="Logout"
-            properties="bg-red-600 hover:bg-red-700"
-            onClick={handleLogout}
-          />
+          // If user IS logged in, show their name and a Logout button
+          <div className="flex items-center gap-x-4">
+            <span className="font-semibold text-gray-700">Hi, {user.name}!</span>
+            <AnimButton
+              text="Logout"
+              properties="bg-red-600" // Use a different color for logout
+              onClick={handleLogout}
+            />
+          </div>
         ) : (
+          // If user IS NOT logged in, show the Login/Signup button
           <AnimButton
-            text="Login / Sign up"
+            text="login/sign up"
             properties="bg-black"
             onClick={() => navigate("/login")}
           />

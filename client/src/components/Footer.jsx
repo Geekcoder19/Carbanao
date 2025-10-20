@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom'
 
 export default function Footer() {
   return (
-   <footer className='bg-black mt-10 px-20 pt-5 rounded-tl-lg rounded-tr-lg'>
+   <footer className='bg-white  mt-10 px-20 pt-5 rounded-tl-lg rounded-tr-lg'>
 
 <div className='flex flex-col justify-between  mb-10 md-tablet:flex-row  gap-x-10 gap-y-20'>
 <div className='flex flex-col gap-10  sm:items-center sm:flex-row'>

@@ -9,31 +9,20 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// 🔹 Connect to MongoDB
 mongoose
-  .connect(
-    "mongodb+srv://shahwezqureshi19_db_user:NyvwnJiZ5mdMKEU9@cluster0.ralwanz.mongodb.net/FYP"
-  )
+  .connect("mongodb+srv://shahwezqureshi19_db_user:NyvwnJiZ5mdMKEU9@cluster0.ralwanz.mongodb.net/FYP")
   .then(() => console.log("✅ Connected to MongoDB"))
   .catch((err) => console.error("❌ MongoDB connection error:", err));
 
-// 🔹 LOGIN Route
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
-
   try {
     const user = await usermodel.findOne({ email });
+    if (!user) return res.json({ status: "error", message: "User not found" });
+    if (user.password !== password)
+      return res.json({ status: "error", message: "Incorrect password" });
 
-    if (!user) {
-      return res.json({ status: "error", message: "User not found" });
-    }
-
-    if (user.password !== password) {
-      return res.json({ status: "error", message: "The password is incorrect" });
-    }
-
-    console.log("✅ User logged in successfully:", user.username);
-
+    console.log("✅ User logged in:", user.username);
     res.json({
       status: "success",
       user: {
@@ -58,13 +47,10 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// 🔹 REGISTER Route
 app.post("/register", async (req, res) => {
   try {
     const user = await usermodel.create(req.body);
-
-    console.log("✅ New user registered successfully:", user.username);
-
+    console.log("✅ Registered:", user.username);
     res.json({
       status: "success",
       user: {
@@ -79,7 +65,6 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// 🔹 UPDATE ANSWERS Route
 app.post("/update-answers", async (req, res) => {
   try {
     const {
@@ -96,7 +81,6 @@ app.post("/update-answers", async (req, res) => {
     } = req.body;
 
     const query = email ? { email } : { username };
-
     const updatedUser = await usermodel.findOneAndUpdate(
       query,
       {
@@ -112,11 +96,10 @@ app.post("/update-answers", async (req, res) => {
       { new: true }
     );
 
-    if (!updatedUser) {
+    if (!updatedUser)
       return res.status(404).json({ status: "error", message: "User not found" });
-    }
 
-    console.log("✅ Answers updated for:", updatedUser.email || updatedUser.username);
+    console.log("✅ Updated answers for:", updatedUser.email);
     res.json({
       status: "success",
       message: "Answers updated successfully",
@@ -128,7 +111,4 @@ app.post("/update-answers", async (req, res) => {
   }
 });
 
-// 🔹 Start Server
-app.listen(3001, () => {
-  console.log("🚀 Server is running on port 3001");
-});
+app.listen(3001, () => console.log("🚀 Server running on port 3001"));

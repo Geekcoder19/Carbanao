@@ -24,7 +24,12 @@ export default function SignupQuestions({ onComplete }) {
   };
 
   const handleSubmit = () => {
-    console.log("✅ User answers (as object):", Object.fromEntries(answers));
+    // Check if all questions are answered
+    if (answers.size !== questions.length) {
+      alert("Please answer all questions before finishing.");
+      return;
+    }
+    console.log("✅ Sending these answers (as object):", Object.fromEntries(answers));
     if (onComplete) onComplete(answers);
   };
 
@@ -34,12 +39,12 @@ export default function SignupQuestions({ onComplete }) {
         <h2 className="text-2xl font-bold text-center mb-6">
           Tell us about your interests
         </h2>
-
         {questions.map((q) => (
           <div key={q} className="mb-4">
-            <p className="font-medium mb-2">{q}</p>
+            <p className="font-medium mb-2">{q.replace(/_/g, " ")}</p> {/* Cleans up display text */}
             <div className="flex gap-4">
               <button
+                // ✅ Ensure value is the number 1
                 onClick={() => handleAnswer(q, 1)}
                 className={`flex-1 py-2 rounded-lg font-semibold border ${
                   answers.get(q) === 1
@@ -50,6 +55,7 @@ export default function SignupQuestions({ onComplete }) {
                 Yes
               </button>
               <button
+                // ✅ Ensure value is the number 0
                 onClick={() => handleAnswer(q, 0)}
                 className={`flex-1 py-2 rounded-lg font-semibold border ${
                   answers.get(q) === 0
@@ -62,7 +68,6 @@ export default function SignupQuestions({ onComplete }) {
             </div>
           </div>
         ))}
-
         <button
           onClick={handleSubmit}
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold mt-4"

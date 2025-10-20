@@ -6,149 +6,168 @@ import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass";
 
+// Define empty stubs for the functions expected by the parent component (main.jsx)
+const updateLightsForCar = () => {};
+const normalizeCarMaterials = () => {};
+
 export function setupScene(containerRef, sceneRef, cameraRef, rendererRef, controlsRef, loaderRef) {
-  if (!containerRef.current) return {};
+  if (!containerRef.current) return {};
 
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x111111);
-  sceneRef.current = scene;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x111111);
+  sceneRef.current = scene;
 
-  // Camera
-  const camera = new THREE.PerspectiveCamera(
-    60,
-    containerRef.current.clientWidth / containerRef.current.clientHeight,
-    0.1,
-    1000
-  );
-  camera.position.set(10, 5, 15);
-  cameraRef.current = camera;
+  // Camera
+  const camera = new THREE.PerspectiveCamera(
+    60,
+    containerRef.current.clientWidth / containerRef.current.clientHeight,
+    0.1,
+    1000
+  );
+  camera.position.set(10, 5, 15);
+  cameraRef.current = camera;
 
-  // Renderer
-  const renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  containerRef.current.appendChild(renderer.domElement);
-  rendererRef.current = renderer;
+  // Renderer
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding; 
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  
+  // 1. FIX: Reduce overall exposure. HDRIs tend to be very bright.
+  renderer.toneMappingExposure = 0.5; // Changed from 1.0 to 0.5 (or even lower like 0.3)
 
-  // Controls
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-  controlsRef.current = controls;
+  containerRef.current.appendChild(renderer.domElement);
+  rendererRef.current = renderer;
 
-  // Lights
-  const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
-  scene.add(ambientLight);
+  // Controls
+  const controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controlsRef.current = controls;
 
-  const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-  dirLight.position.set(10, 20, 10);
-  dirLight.castShadow = true;
-  dirLight.shadow.mapSize.set(2048, 2048);
-  scene.add(dirLight);
+  // Lights
+  // 2. FIX: Reduce intensities of direct lights to prevent clipping/over-exposure.
+  // AmbientLight was correctly removed in the previous fix.
 
-  const spotLight = new THREE.SpotLight(0xffffff, 1.5);
-  spotLight.position.set(15, 25, 15);
-  spotLight.castShadow = true;
-  spotLight.angle = Math.PI / 6;
-  scene.add(spotLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.3); // Reduced intensity from 1 to 0.3
+  dirLight.position.set(10, 20, 10);
+  dirLight.castShadow = true;
+  dirLight.shadow.mapSize.set(2048, 2048);
+  scene.add(dirLight);
 
-  // ✅ Simple GLTF Loader (no DRACO)
-  const gltfLoader = new GLTFLoader();
-  loaderRef.current = gltfLoader;
+  const spotLight = new THREE.SpotLight(0xffffff, 0.5); // Reduced intensity from 1.5 to 0.5
+  spotLight.position.set(15, 25, 15);
+  spotLight.castShadow = true;
+  spotLight.angle = Math.PI / 6;
+  scene.add(spotLight);
 
-  // HDRI reflections
-  const pmremGenerator = new THREE.PMREMGenerator(renderer);
-  new RGBELoader().load("/hdr/studio.hdr", (hdrEquirect) => {
-    const envMap = pmremGenerator.fromEquirectangular(hdrEquirect).texture;
-    scene.environment = envMap;
-    scene.background = envMap;
-    hdrEquirect.dispose();
-    pmremGenerator.dispose();
-  });
+  // GLTF Loader
+  const gltfLoader = new GLTFLoader();
+  loaderRef.current = gltfLoader;
 
-  // Load showroom
-  loaderRef.current.load("/models/Mehran/showroom.glb", (gltf) => {
-    const model = gltf.scene;
-    model.traverse((child) => {
-      if (child.isMesh && child.material) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        const name = child.name.toLowerCase();
+  // HDRI reflections
+  const pmremGenerator = new THREE.PMREMGenerator(renderer);
+  pmremGenerator.compileEquirectangularShader(); 
 
-        // Tyres: matte black
-        if (name.includes("tyre")) {
-          if (child.material.isMeshStandardMaterial) {
-            child.material.roughness = 0.9;
-            child.material.metalness = 0.1;
-          }
-          return;
-        }
+  new RGBELoader().setDataType(THREE.HalfFloatType).load("/hdr/studio.hdr", (hdrEquirect) => {
+    const envMap = pmremGenerator.fromEquirectangular(hdrEquirect).texture;
+    scene.environment = envMap;
+    scene.background = envMap;
+    hdrEquirect.dispose();
+    pmremGenerator.dispose();
+    
+    // We can also adjust exposure here if needed, but 0.5 earlier should be effective
+  });
 
-        // Rims: keep textures or shiny silver
-        if (name.includes("rim") || name.includes("wheel")) {
-          if (child.material.isMeshStandardMaterial) {
-            if (child.material.map || child.material.metalnessMap || child.material.roughnessMap) {
-              child.material.envMapIntensity = 1.2;
-            } else {
-              child.material.metalness = 1.0;
-              child.material.roughness = 0.2;
-              child.material.color = new THREE.Color(0xcccccc);
-              child.material.envMapIntensity = 1.5;
-            }
-          }
-          return;
-        }
+  // Load showroom (material processing kept local)
+  loaderRef.current.load("/models/Mehran/showroom.glb", (gltf) => {
+    const model = gltf.scene;
+    model.traverse((child) => {
+      if (child.isMesh && child.material) {
+        child.castShadow = true;
+        child.receiveShadow = true;
+        const name = child.name.toLowerCase();
 
-        // Other meshes
-        if (child.material.isMeshStandardMaterial) {
-          child.material.roughness = 0.4;
-          child.material.metalness = 0.3;
-        }
-      }
-    });
-    scene.add(model);
-  });
+        // Tyres: matte black
+        if (name.includes("tyre")) {
+          if (child.material.isMeshStandardMaterial) {
+            child.material.roughness = 0.9;
+            child.material.metalness = 0.1;
+          }
+          return;
+        }
 
-  // Post-processing
-  const composer = new EffectComposer(renderer);
-  composer.addPass(new RenderPass(scene, camera));
-  const bloomPass = new UnrealBloomPass(
-    new THREE.Vector2(containerRef.current.clientWidth, containerRef.current.clientHeight),
-    0.6,
-    0.4,
-    0.85
-  );
-  composer.addPass(bloomPass);
+        // Rims: keep textures or shiny silver
+        if (name.includes("rim") || name.includes("wheel")) {
+          if (child.material.isMeshStandardMaterial) {
+            if (child.material.map || child.material.metalnessMap || child.material.roughnessMap) {
+              child.material.envMapIntensity = 1.2;
+            } else {
+              child.material.metalness = 1.0;
+              child.material.roughness = 0.2;
+              child.material.color = new THREE.Color(0xcccccc);
+              child.material.envMapIntensity = 1.5;
+            }
+          }
+          return;
+        }
 
-  // Animate
-  let animationFrameId;
-  const animate = () => {
-    animationFrameId = requestAnimationFrame(animate);
-    controls.update();
-    composer.render();
-  };
-  animate();
+        // Other meshes
+        if (child.material.isMeshStandardMaterial) {
+          child.material.roughness = 0.4;
+          child.material.metalness = 0.3;
+        }
+      }
+    });
+    scene.add(model);
+  });
 
-  // Resize
-  const onResize = () => {
-    if (!containerRef.current) return;
-    const width = containerRef.current.clientWidth;
-    const height = containerRef.current.clientHeight;
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height);
-    composer.setSize(width, height);
-  };
-  window.addEventListener("resize", onResize);
+  // Post-processing
+  const composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+  // 3. FIX: Adjust Bloom Pass parameters for less intensity.
+  const bloomPass = new UnrealBloomPass(
+    new THREE.Vector2(containerRef.current.clientWidth, containerRef.current.clientHeight),
+    0.3, // Strength reduced from 0.6 to 0.3
+    0.4,
+    0.85
+  );
+  composer.addPass(bloomPass);
 
-  // Renderer tone mapping
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  // Animate
+  let animationFrameId;
+  const animate = () => {
+    animationFrameId = requestAnimationFrame(animate);
+    controls.update();
+    composer.render();
+  };
+  animate();
 
-  // ✅ Return cleanup references
-  return { scene, camera, renderer, controls, composer, cleanup: () => {
-    cancelAnimationFrame(animationFrameId);
-    window.removeEventListener("resize", onResize);
-  }};
+  // Resize
+  const onResize = () => {
+    if (!containerRef.current) return;
+    const width = containerRef.current.clientWidth;
+    const height = containerRef.current.clientHeight;
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+    renderer.setSize(width, height);
+    composer.setSize(width, height);
+  };
+  window.addEventListener("resize", onResize);
+
+  // ✅ Return cleanup references and stubs for external functions
+  return { 
+        scene, 
+        camera, 
+        renderer, 
+        controls, 
+        composer, 
+        updateLightsForCar, // Stubbed function 
+        normalizeCarMaterials, // Stubbed function 
+        cleanup: () => {
+            cancelAnimationFrame(animationFrameId);
+            window.removeEventListener("resize", onResize);
+        }
+    };
 }

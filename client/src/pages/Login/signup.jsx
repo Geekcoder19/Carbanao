@@ -41,7 +41,6 @@ export default function Register() {
     }
   };
 
-  // ✅ Mapping of frontend keys to backend-safe keys
   const questionMapping = {
     "Past Modifications": "pastModifications",
     "Bodykit_Spoiler": "bodykitSpoiler",
@@ -53,93 +52,60 @@ export default function Register() {
     "smart features": "smartFeatures",
   };
 
-  // ✅ When user finishes questions
   const handleQuestionsComplete = async (answers) => {
-    const mappedAnswers = {};
+    // `answers` is the original Map with frontend keys ("Past Modifications": "Yes")
+
+    // ✅ FIX: Create a NEW Map with the correct BACKEND keys
+    const answersWithBackendKeys = new Map();
+    const mappedAnswersForApi = {}; // This is for the POST request body
+
     answers.forEach((value, key) => {
-      const cleanKey = questionMapping[key];
-      if (cleanKey) mappedAnswers[cleanKey] = value;
+      const backendKey = questionMapping[key];
+      if (backendKey) {
+        answersWithBackendKeys.set(backendKey, value); // e.g., "pastModifications": "Yes"
+        mappedAnswersForApi[backendKey] = value;
+      }
     });
 
-    // ✅ Save answers globally
-    registerUser({ username, email }, answers);
+    // ✅ FIX: Save the Map WITH THE CORRECT KEYS to the global context
+    registerUser({ username, email }, answersWithBackendKeys);
 
-    // ✅ Send to backend with email (important fix)
+    // Send to backend
     try {
       await axios.post("http://localhost:3001/update-answers", {
         email,
-        ...mappedAnswers,
+        ...mappedAnswersForApi,
       });
       console.log("✅ Answers sent to backend successfully!");
     } catch (err) {
       console.error("❌ Failed to send answers to backend:", err);
     }
 
-    navigate("/login");
+    navigate("/Homepage");
+    // navigate("/login");
   };
 
   if (showQuestions) {
     return <SignupQuestions onComplete={handleQuestionsComplete} />;
   }
 
+  // ... rest of your Register component JSX is the same
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-500 to-blue-600 p-4">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
         <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
           Create Account
         </h1>
-
         <form onSubmit={handleRegister} className="space-y-5">
-          <div>
-            <label className="block text-gray-700 mb-1">Username</label>
-            <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
-          >
-            {loading ? "Registering..." : "Register"}
-          </button>
+            {/* Input fields... */}
+            <div><label className="block text-gray-700 mb-1">Username</label><input type="text" value={username} onChange={(e) => setUsername(e.target.value)} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500" /></div>
+            <div><label className="block text-gray-700 mb-1">Password</label><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500" /></div>
+            <div><label className="block text-gray-700 mb-1">Email</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500" /></div>
+            <button type="submit" disabled={loading} className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">{loading ? "Registering..." : "Register"}</button>
         </form>
-
         <div className="text-center mt-6">
-          <p className="text-sm text-gray-600 mb-3">Already have an account?</p>
-          <button
-            onClick={() => navigate("/login")}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            Go to Login
-          </button>
+            <p className="text-sm text-gray-600 mb-3">Already have an account?</p>
+            <button onClick={() => navigate("/login")} className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Go to Login</button>
         </div>
       </div>
     </div>

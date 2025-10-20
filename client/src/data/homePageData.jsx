@@ -172,11 +172,11 @@ const listData2 = [
 const teamData = [
 {
   profile:team_member1,
-  name:"Shahwaiz Qureshi",
+  name:"Qurat-Ul-Ain Siyal",
 },
 {
   profile:team_member2,
-  name:"Qurat-Ul-Ain Siyal",
+  name:"Shahwaiz Qureshi",
 },
 {
   profile:team_member3,
